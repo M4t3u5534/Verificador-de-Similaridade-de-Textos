@@ -1,0 +1,1 @@
+# Verificador-de-Similaridade-de-Textos
