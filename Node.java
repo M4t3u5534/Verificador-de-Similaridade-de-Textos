@@ -1,46 +1,63 @@
+/*
+Referencia utilizada para implementação das rotações:
+- https://www.guj.com.br/t/arvore-avl-resolvido/58272/3
+ */
+
 import java.util.ArrayList;
-
-class Par {
-    public String elemento1;
-    public String elemento2;
-
-    public Par(String um, String dois){
-        elemento1 = um;
-        elemento2 = dois;
-    }
-}
+import java.util.List;
 
 public class Node {
-    int similaridade, h;
-    ArrayList<Par> pares = new ArrayList<>();
+    double similaridade;
+    List<Resultado> resultados;
     Node left, right;
+    int h;
 
-    Node(int similaridade, String arquivo1, String arquivo2) {
-        this.similaridade = similaridade;
-        pares.add(new Par(arquivo1, arquivo2));
-        h = 1;
+    // contrutor
+    public Node(Resultado r) {
+        this.similaridade = r.getSimilaridade();
+        this.resultados = new ArrayList<>();
+        this.resultados.add(r);
+        this.h = 1;
     }
 
-    public void add_par(int similaridade, String arquivo1, String arquivo2){
-        if (this.similaridade == similaridade)
-            pares.add(new Par(arquivo1, arquivo2));
+    // objeto no formato resultado
+    public void addResultado(Resultado r) { 
+        resultados.add(r); 
     }
 
-    public void remove_par(int similaridade, String arquivo1, String arquivo2){
-        int i = 0;
-        while (!(pares.get(i).elemento1 == arquivo1 || pares.get(i).elemento1 == arquivo2 && pares.get(i).elemento2 == arquivo1 || pares.get(i).elemento2 == arquivo2) && i <= pares.size()) {
-            i++;
+    public void atualiza_h() { 
+        h = 1 + Math.max(getAltura(left), getAltura(right)); 
+    }
+
+    public int fator_balanceamento() { 
+        return getAltura(left) - getAltura(right); 
+    }
+
+    private int getAltura(Node n) {
+        if (n == null) {
+            return 0;
+        } else {
+            return n.h;
         }
-        if (i <= pares.size()) pares.remove(pares.get(i));
     }
 
-    public int quant_pares(){
-        return pares.size();
+    public Node rotacao_direita() {
+        Node x = left;
+        Node T2 = x.right;
+        x.right = this;
+        left = T2;
+        atualiza_h();
+        x.atualiza_h();
+        return x;
     }
 
-    public void print_pares(){
-        for (Par par : pares) {
-            System.out.println(par.elemento1 + " " + par.elemento2);
-        }
+    public Node rotacao_esquerda() {
+        Node y = right;
+        Node T2 = y.left;
+        y.left = this;
+        right = T2;
+        atualiza_h();
+        y.atualiza_h();
+        return y;
     }
 }
