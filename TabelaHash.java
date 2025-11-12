@@ -1,130 +1,83 @@
-// Classe Entry para armazenar chave e valor
-class Entry {
-    String chave;
-    int valor;
-
-    public Entry(String chave) {
-        this.chave = chave;
-        this.valor = 0;
-    }
-}
-
-// Tabela Hash com Enderecamento Aberto - Dispersao Dupla
 public class TabelaHash {
     private Entry[] tabela;
     private int m; // tamanho da tabela
     private int n; // numero de elementos
+    private int colisoes = 0; // numero de colisoes
 
-    // Construtor
+    // Contrutor
     public TabelaHash(int tamanho) {
         this.m = tamanho;
         this.tabela = new Entry[m];
         this.n = 0;
     }
 
-    // Primeira funcao hash - metodo da divisao
-    private int h1(int chave) {
-        if (chave < 78)
-            return chave % 26 - 13;
-        return chave % 26 + 13;
+
+    // analisar pq o gpt que mudou os números kkkkkk
+    // Primeira fucao hash
+    private int h1(String chave) {
+        int hash = 0;
+        for (char c : chave.toCharArray()) hash = (31 * hash + c) % m; // hash clássico
+        return hash;
     }
 
     // Segunda funcao hash
-    private int h2(int chave) {
-        return 26 + chave % 7; // usando 7 como constante
+    private int h2(String chave) {
+        int hash = 0;
+        for (char c : chave.toCharArray()) hash = (37 * hash + c) % (m - 1); // menor que m
+        return hash + 1; // garante que nunca seja zero
     }
 
-    // Funcao de dispersao dupla
-    private int hash(int chave, int i) {
+    // Função de hash dupla
+    private int hash(String chave, int i) {
         return (h1(chave) + i * h2(chave)) % m;
     }
 
     // Inserir elemento
     public void inserir(String chave, int i) {
-        if (n >= m) {
-            System.out.println("Tabela cheia!");
-            return;
+        if (n >= m) { 
+            System.out.println("Tabela cheia!"); 
+            return; 
         }
 
-        int posicao = hash(chave.charAt(0), i);
+        int posicao = hash(chave, i);
 
-        // Se posicao vazia, insere
         if (tabela[posicao] == null) {
             tabela[posicao] = new Entry(chave);
             n++;
-            System.out.println("Chave " + chave + " inserida na posicao " + posicao);
             return;
         }
 
-        // Se chave ja existe, atualiza
         if (tabela[posicao].chave.equals(chave)) {
-            tabela[posicao].valor += 1;
-            System.out.println("Chave " + chave + " atualizada");
+            tabela[posicao].valor++;
             return;
         }
 
-        inserir(chave, i+1);
+        colisoes++;
+        inserir(chave, i + 1);
     }
 
-    // Buscar elemento
+    // --- Busca usando double hashing ---
     public int buscar(String chave) {
-        int i = 0;
-        int posicao;
+        for (int i = 0; i < m; i++) {
+            int pos = hash(chave, i);
 
-        while (i < m) {
-            posicao = hash(chave.charAt(0), i);
-
-            // Se posicao vazia, elemento nao existe
-            if (tabela[posicao] == null) {
-                System.out.println("Chave " + chave + " nao encontrada");
+            if (tabela[pos] == null) {
                 return -1;
             }
 
-            // Se encontrou a chave e nao esta deletada
-            if (tabela[posicao].chave.equals(chave)) {
-                System.out.println("Chave " + chave + " encontrada na posicao " + posicao);
-                return tabela[posicao].valor;
+            if (tabela[pos].chave.equals(chave)) {
+                return tabela[pos].valor;
             }
-
-            i++;
         }
-
-        System.out.println("Chave " + chave + " nao encontrada");
         return -1;
     }
-
-    // Remover elemento (remocao logica)
-    public void remover(String chave) {
-        int i = 0;
-        int posicao;
-
-        while (i < m) {
-            posicao = hash(chave.charAt(0), i);
-
-            if (tabela[posicao] == null) {
-                System.out.println("Chave " + chave + " nao encontrada");
-                return;
-            }
-
-            if (tabela[posicao].chave == chave) {
-                n--;
-                tabela[posicao] = null;
-                System.out.println("Chave " + chave + " removida da posicao " + posicao);
-                return;
-            }
-
-            i++;
-        }
-
-        System.out.println("Chave " + chave + " nao encontrada");
-    }
-
-    // Imprimir tabela
+    // Método para imprimir toda a tabela hash
     public void imprimir() {
         System.out.println("\n--- Tabela Hash ---");
         System.out.println("Tamanho: " + m);
         System.out.println("Elementos: " + n);
         System.out.println("Fator de carga: " + (double) n / m);
+        System.out.println("Colisões: " + colisoes);
         System.out.println("-------------------");
 
         for (int i = 0; i < m; i++) {
@@ -136,5 +89,20 @@ public class TabelaHash {
             }
         }
         System.out.println();
+    }
+
+
+    public int getColisoes() { return colisoes; }
+
+    public Entry[] getTabela() { return tabela; }
+
+    public static class Entry {
+        String chave;
+        int valor;
+
+        Entry(String chave) { 
+            this.chave = chave; 
+            this.valor = 1; 
+        }
     }
 }
