@@ -117,6 +117,8 @@ public class Main {
             
             avl.imprimir();
             
+            analisaDesempenho(documentos);
+            
         } catch (IOException e) {
             System.err.println("Erro ao processar arquivos: " + e.getMessage());
         }
@@ -128,5 +130,49 @@ public class Main {
             lista.addAll(node.resultados);
             coletarResultadosEmOrdem(node.right, lista);
         }
+    }
+
+    private static void analisaDesempenho(List<Documento> documentos){
+        int[] dispersao = new int[93];
+        int quant = 0;
+        for (Documento d : documentos) {
+            quant++;
+            int[] aux = d.getVocabulario().getBucketSizes();
+            for (int i : aux) {
+                dispersao[i] += i;
+            }
+        }
+        for (int i = 0; i < dispersao.length; i++) {
+            dispersao[i] /= quant;
+        }
+
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("------------ Grafico da distribuicao das colisoes medias das tabelas de dispersao -------------\n");
+        
+        int maxValue = 0;
+        for (int size : dispersao) {
+            if (size > maxValue) {
+                maxValue = size;
+            }
+        }
+
+        for (int h = maxValue; h >= 1; h--) {
+            System.out.printf("%4s |", (h * maxValue / maxValue));
+            
+            for (int size : dispersao) {
+                if (size >= h) {
+                    System.out.print(" # ");
+                } else {
+                    System.out.print("   ");
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.print(" Slot|");
+        for (int i = 0; i < dispersao.length; i++) {
+             System.out.printf(" %d ", i % 10);
+        }
+        System.out.println("\n");
     }
 }

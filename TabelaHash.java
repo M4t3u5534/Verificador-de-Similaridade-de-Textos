@@ -1,8 +1,10 @@
+import java.util.ArrayList;
+
 public class TabelaHash {
     private Entry[] tabela;
     private int m; // tamanho da tabela
     private int n; // numero de elementos
-    private int colisoes = 0; // numero de colisoes
+    private ArrayList<Integer> colisoes; // numero de colisoes
 
     // Contrutor
     public TabelaHash(int tamanho) {
@@ -52,7 +54,7 @@ public class TabelaHash {
             return;
         }
 
-        colisoes++;
+        colisoes.add(posicao);
         inserir(chave, i + 1);
     }
 
@@ -92,7 +94,7 @@ public class TabelaHash {
     }
 
 
-    public int getColisoes() { return colisoes; }
+    public int getColisoes() { return colisoes.size(); }
 
     public Entry[] getTabela() { return tabela; }
 
@@ -104,5 +106,13 @@ public class TabelaHash {
             this.chave = chave; 
             this.valor = 1; 
         }
+    }
+
+    public int[] getBucketSizes() {
+        int[] sizes = new int[m];
+        for (int i = 0; i < colisoes.size(); i++) {
+            sizes[colisoes.get(i)]++;
+        }
+        return sizes;
     }
 }
