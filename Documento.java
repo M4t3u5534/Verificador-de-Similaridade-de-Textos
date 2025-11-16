@@ -23,8 +23,7 @@ public class Documento {
         "aquele", "aquela", "sua", "seu", "meu", "minha", "nosso", "nossa"
     ));
 
-    // @param caminho caminho do arquivo que vai ser processado
-    // @throws IOException se houver erro na leitura do arquivo
+
     public Documento(Path caminho) throws IOException {
         this.caminhoArquivo = caminho;
         this.nomeArquivo = caminho.getFileName().toString();
@@ -42,7 +41,7 @@ public class Documento {
         String[] palavras = textoNormalizado.split("\\s+");
         
         // cria a tabela hash com tamanho apropriado
-        // multiplicamos por 2 para manter fator de carga baixo (~0.5)
+        // multiplicamos por 2 para manter fator de carga baixo 
         int tamanhoTabela = Math.max(palavras.length * 2, 10); // minimo de 10 
         this.vocabulario = new TabelaHash(tamanhoTabela);
         
@@ -51,11 +50,10 @@ public class Documento {
     }
 
     // normaliza o texto converte para minusculas, remove pontuacao e espacos extras
-    // @param texto texto a ser normalizado
-    // @return texto normalizado
+    // retorna texto normalizado
     private String normalizarTexto(String texto) {
         // converte para minusculas
-        texto = texto.toLowerCase();
+        texto = texto.toLowerCase();// texto a ser normalizado
         
         // retira tudo que nao estiver entre a-z e 0-9
         texto = texto.replaceAll("[^a-záàâãéèêíóôõúç0-9\\s]", ""); 
@@ -67,7 +65,7 @@ public class Documento {
     }
 
     // contabiliza a frequencia de cada palavra
-    // @param palavras array de palavras a serem processadas
+    // palavras representa o array de palavras a serem processadas
     private void processarPalavras(String[] palavras) {
         for (String palavra : palavras) {
             // pula palavras vazias
@@ -85,22 +83,22 @@ public class Documento {
         }
     }
 
-    // @return nome do arquivo
+    // retorna nome do arquivo
     public String getNomeArquivo() {
         return nomeArquivo;
     }
 
-    // @return caminho do arquivo
+    // retorna caminho do arquivo
     public Path getCaminhoArquivo() {
         return caminhoArquivo;
     }
 
-    // @return tabelahash mostrando palavra e frequencia
+    // retorna tabelahash mostrando palavra e frequencia
     public TabelaHash getVocabulario() {
         return vocabulario;
     }
 
-    // @return string com nome do arquivo
+    // retorna string com nome do arquivo
     @Override
     public String toString() {
         return "Documento: " + nomeArquivo;

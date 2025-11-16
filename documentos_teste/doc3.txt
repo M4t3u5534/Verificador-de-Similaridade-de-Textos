@@ -1,0 +1,2 @@
+A computação científica envolve algoritmos e análise de dados.
+Estudar estruturas de dados melhora a eficiência do código.

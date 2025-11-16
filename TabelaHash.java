@@ -1,10 +1,8 @@
-import java.util.ArrayList;
-
 public class TabelaHash {
     private Entry[] tabela;
     private int m; // tamanho da tabela
     private int n; // numero de elementos
-    private ArrayList<Integer> colisoes; // numero de colisoes
+    private int colisoes = 0; // numero de colisoes
 
     // Contrutor
     public TabelaHash(int tamanho) {
@@ -13,8 +11,6 @@ public class TabelaHash {
         this.n = 0;
     }
 
-
-    // analisar pq o gpt que mudou os números kkkkkk
     // Primeira fucao hash
     private int h1(String chave) {
         int hash = 0;
@@ -54,11 +50,11 @@ public class TabelaHash {
             return;
         }
 
-        colisoes.add(posicao);
+        colisoes++;
         inserir(chave, i + 1);
     }
 
-    // --- Busca usando double hashing ---
+    // Busca usando double hashing
     public int buscar(String chave) {
         for (int i = 0; i < m; i++) {
             int pos = hash(chave, i);
@@ -73,28 +69,7 @@ public class TabelaHash {
         }
         return -1;
     }
-    // Método para imprimir toda a tabela hash
-    public void imprimir() {
-        System.out.println("\n--- Tabela Hash ---");
-        System.out.println("Tamanho: " + m);
-        System.out.println("Elementos: " + n);
-        System.out.println("Fator de carga: " + (double) n / m);
-        System.out.println("Colisões: " + colisoes);
-        System.out.println("-------------------");
-
-        for (int i = 0; i < m; i++) {
-            System.out.print("[" + i + "] ");
-            if (tabela[i] == null) {
-                System.out.println("vazio");
-            } else {
-                System.out.println(tabela[i].chave + " -> " + tabela[i].valor);
-            }
-        }
-        System.out.println();
-    }
-
-
-    public int getColisoes() { return colisoes.size(); }
+    public int getColisoes() { return colisoes; }
 
     public Entry[] getTabela() { return tabela; }
 
@@ -106,13 +81,5 @@ public class TabelaHash {
             this.chave = chave; 
             this.valor = 1; 
         }
-    }
-
-    public int[] getBucketSizes() {
-        int[] sizes = new int[m];
-        for (int i = 0; i < colisoes.size(); i++) {
-            sizes[colisoes.get(i)]++;
-        }
-        return sizes;
     }
 }

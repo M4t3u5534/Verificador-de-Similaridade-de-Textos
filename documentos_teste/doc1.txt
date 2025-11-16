@@ -1,0 +1,2 @@
+Estrutura de dados é essencial em ciência da computação.
+Aprender algoritmos é importante para resolver problemas.

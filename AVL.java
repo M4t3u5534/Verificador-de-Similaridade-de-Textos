@@ -28,17 +28,21 @@ public class AVL {
         if (balanco > 1 && res.getSimilaridade() < node.left.similaridade) { 
             rotacoes_simples++; 
             return node.rotacao_direita(); 
+        
         } if (balanco < -1 && res.getSimilaridade() > node.right.similaridade) { 
             rotacoes_simples++; 
             return node.rotacao_esquerda(); 
+        
         } if (balanco > 1 && res.getSimilaridade() > node.left.similaridade) { 
             rotacoes_duplas++; 
             node.left = node.left.rotacao_esquerda(); 
             return node.rotacao_direita(); 
+        
         } if (balanco < -1 && res.getSimilaridade() < node.right.similaridade) { 
             rotacoes_duplas++; 
             node.right = node.right.rotacao_direita(); 
             return node.rotacao_esquerda(); 
+        
         } return node;
     }
 

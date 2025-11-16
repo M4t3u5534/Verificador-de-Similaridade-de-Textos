@@ -1,3 +1,8 @@
+/* 
+Análise de tempo: 
+https://docs.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#currentTimeMillis() 
+ */
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -5,11 +10,29 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
+
+        /* VARIAVEL QUE ATIVA A ANALISE EXPERIMENTAL:
+            -> True para ativar
+            -> False para desativar
+        */ 
+        boolean ANALISE_EXPERIMENTAL = true;
+
+        long inicioPrograma = 0;
+
+        if (ANALISE_EXPERIMENTAL) {
+            inicioPrograma = System.currentTimeMillis();
+        }
+
+
+
+
+
         if (args.length < 3) {
             System.err.println("Argumentos faltantes: " + (3 - args.length));
             System.err.println("Uso: java Main <diretorio_documentos> <limiar> <modo> [argumentos_opcionais]");
             return;
         }
+
         // principais inicializações
         String diretorio = args[0];
         double limiar = Double.parseDouble(args[1]);
@@ -37,7 +60,6 @@ public class Main {
             buscaArquivos.add(args[4]);
         }
 
-
         // verificações de diretório
         Path dirPath = Paths.get(diretorio);
         if (!Files.exists(dirPath) || !Files.isDirectory(dirPath)) {
@@ -52,16 +74,31 @@ public class Main {
             AVL avl = new AVL();
             int totalComparados = 0;
 
+            // VARIÁVEIS DE ANÁLISE
+            long tempoTotalSimilaridade = 0;
+            long tempoTotalInsercaoAVL = 0;
+            int totalColisoesHash = 0;
+            List<Double> fatoresCarga = new ArrayList<>();
+
 
             // carrega documentos
             List<Documento> documentos = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath)) {
                 for (Path arquivo : stream) {
                     if (Files.isRegularFile(arquivo)) {
-                        documentos.add(new Documento(arquivo));
+
+                        Documento doc = new Documento(arquivo);
+                        documentos.add(doc);
+
+                        // coleta dados de hash
+                        TabelaHash tabela = doc.getVocabulario();
+                        totalColisoesHash += tabela.getColisoes();
+                        fatoresCarga.add((double)tabela.getColisoes() / tabela.getTabela().length);
+
                     }
-                }
+                }System.out.println("");
             }
+
 
             // processamento de todos os pares
             for (int i = 0; i < documentos.size(); i++) {
@@ -69,7 +106,6 @@ public class Main {
                     Documento d1 = documentos.get(i);
                     Documento d2 = documentos.get(j);
 
-                    // filtro do modo busca para apenas os selecionados
                     if (modo.equals("busca")) {
                         if (!((d1.getNomeArquivo().equals(buscaArquivos.get(0)) && d2.getNomeArquivo().equals(buscaArquivos.get(1))) ||
                               (d1.getNomeArquivo().equals(buscaArquivos.get(1)) && d2.getNomeArquivo().equals(buscaArquivos.get(0))))) {
@@ -77,9 +113,20 @@ public class Main {
                         }
                     }
 
+                    // tempo da similaridade
+                    long t0 = System.nanoTime();
                     double sim = ComparadorDeDocumentos.calcularSimilaridadeCosseno(d1, d2);
+                    long t1 = System.nanoTime();
+                    tempoTotalSimilaridade += (t1 - t0);
+
                     if (sim >= limiar) {
+
+                        // medir inserção na AVL
+                        long tA1 = System.nanoTime();
                         avl.insert(new Resultado(d1.getNomeArquivo(), d2.getNomeArquivo(), sim));
+                        long tA2 = System.nanoTime();
+                        tempoTotalInsercaoAVL += (tA2 - tA1);
+
                         totalComparados++;
                     }
                 }
@@ -114,15 +161,57 @@ public class Main {
             System.out.println("\nResultados salvos em resultado.txt");
             System.out.println("Rotações simples: " + avl.rotacoes_simples);
             System.out.println("Rotações duplas: " + avl.rotacoes_duplas);
+
+
+            // ============================
+            // RELATÓRIO DE ANÁLISE EXPERIMENTAL
+            // ============================
+            if (ANALISE_EXPERIMENTAL) {
+
+                long fimPrograma = System.currentTimeMillis();
+                double tempoTotal = fimPrograma - inicioPrograma;
+
+                System.out.println("\n=== ANÁLISE EXPERIMENTAL ===");
+
+                System.out.println("Tempo total do programa: " + tempoTotal + " ms");
+                System.out.println("Tempo médio por comparação: " +
+                    (tempoTotalSimilaridade / 1_000_000.0) / totalComparados + " ms");
+
+                System.out.println("Tempo total em similaridade: " +
+                    (tempoTotalSimilaridade / 1_000_000.0) + " ms");
+
+                System.out.println("Tempo médio de inserção na AVL: " +
+                    (tempoTotalInsercaoAVL / 1_000_000.0) + " ms");
+
+                System.out.println("Total de colisões (todos os documentos): " + totalColisoesHash);
+                System.out.println("Colisões médias por documento: " +
+                    (double) totalColisoesHash / documentos.size());
+
+                System.out.println("Fatores de carga médios das hash tables: " +
+                    fatoresCarga.stream().mapToDouble(Double::doubleValue).average().orElse(0));
+
+                System.out.println("Árvore AVL:\n");
+                avl.imprimir();
+
+                System.out.println("\n=== ANÁLISE DE COLISÕES POR DOCUMENTO ===");
+                for (Documento doc : documentos) {
+                    TabelaHash tabela = doc.getVocabulario();
+                    System.out.println("Documento: " + doc.getNomeArquivo() +
+                                    " | Colisões: " + tabela.getColisoes() +
+                                    " | Tamanho da tabela: " + tabela.getTabela().length);
+                }
+                System.out.println("=====================================");
+
+                
+            }
+
             
-            avl.imprimir();
-            
-            analisaDesempenho(documentos);
             
         } catch (IOException e) {
             System.err.println("Erro ao processar arquivos: " + e.getMessage());
         }
     }    
+
     // Método auxiliar para coletar resultados da AVL em lista
     private static void coletarResultadosEmOrdem(Node node, List<Resultado> lista) {
         if (node != null) {
@@ -130,49 +219,5 @@ public class Main {
             lista.addAll(node.resultados);
             coletarResultadosEmOrdem(node.right, lista);
         }
-    }
-
-    private static void analisaDesempenho(List<Documento> documentos){
-        int[] dispersao = new int[93];
-        int quant = 0;
-        for (Documento d : documentos) {
-            quant++;
-            int[] aux = d.getVocabulario().getBucketSizes();
-            for (int i : aux) {
-                dispersao[i] += i;
-            }
-        }
-        for (int i = 0; i < dispersao.length; i++) {
-            dispersao[i] /= quant;
-        }
-
-        System.out.println("-----------------------------------------------------------------------------------------------");
-        System.out.println("------------ Grafico da distribuicao das colisoes medias das tabelas de dispersao -------------\n");
-        
-        int maxValue = 0;
-        for (int size : dispersao) {
-            if (size > maxValue) {
-                maxValue = size;
-            }
-        }
-
-        for (int h = maxValue; h >= 1; h--) {
-            System.out.printf("%4s |", (h * maxValue / maxValue));
-            
-            for (int size : dispersao) {
-                if (size >= h) {
-                    System.out.print(" # ");
-                } else {
-                    System.out.print("   ");
-                }
-            }
-            System.out.println();
-        }
-        System.out.println("-----------------------------------------------------------------------------------------------");
-        System.out.print(" Slot|");
-        for (int i = 0; i < dispersao.length; i++) {
-             System.out.printf(" %d ", i % 10);
-        }
-        System.out.println("\n");
     }
 }
